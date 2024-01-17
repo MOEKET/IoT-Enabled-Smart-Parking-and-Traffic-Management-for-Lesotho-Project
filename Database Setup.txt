@@ -1,0 +1,129 @@
+# Install required packages using pip install pymongo opencv-python pytesseract
+
+import cv2
+from pymongo import MongoClient
+from datetime import datetime
+import pytesseract
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["smart_parking_db"]
+
+# Define collections
+parking_collection = db["parking_spaces"]
+traffic_collection = db["traffic_data"]
+user_collection = db["users"]
+payment_collection = db["payments"]
+admin_collection = db["administrative_data"]
+
+# Create a document for traffic data and insert it into the collection
+def record_traffic_data(license_plate, timestamp, location):
+    traffic_data = {
+        "license_plate": license_plate,
+        "timestamp": timestamp,
+        "location": location
+    }
+    result = traffic_collection.insert_one(traffic_data)
+    return result.inserted_id
+
+# Function for license plate recognition using OpenCV
+def recognize_license_plate(frame):
+    # Replace this with your actual code for license plate recognition using OpenCV
+    # Example: Using the Tesseract OCR engine
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Your additional image processing steps here (e.g., thresholding, contour detection)
+    text = pytesseract.image_to_string(gray)
+    return text.strip()
+
+# Create a document for parking space and insert it into the collection
+def create_parking_space(location, is_occupied, user_id=None):
+    parking_space_data = {
+        "location": location,
+        "is_occupied": is_occupied,
+        "user_id": user_id
+    }
+    result = parking_collection.insert_one(parking_space_data)
+    return result.inserted_id
+
+# Create a document for user information and insert it into the collection
+def create_user(username, email, password):
+    user_data = {
+        "username": username,
+        "email": email,
+        "password": password
+    }
+    result = user_collection.insert_one(user_data)
+    return result.inserted_id
+
+# Create a document for payment details and insert it into the collection
+def create_payment(user_id, amount, payment_method):
+    payment_data = {
+        "user_id": user_id,
+        "amount": amount,
+        "payment_method": payment_method,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    result = payment_collection.insert_one(payment_data)
+    return result.inserted_id
+
+# Create a document for administrative details and insert it into the collection
+def create_admin_record(username, action, timestamp):
+    admin_data = {
+        "username": username,
+        "action": action,
+        "timestamp": timestamp
+    }
+    result = admin_collection.insert_one(admin_data)
+    return result.inserted_id
+
+# Example usage for video processing
+if __name__ == "__main__":
+    # Example video source (replace with the actual source, e.g., 0 for webcam or a file path)
+    video_source = "path/to/your/video.mp4"
+
+    # Open the video capture object
+    cap = cv2.VideoCapture(video_source)
+
+    while cap.isOpened():
+        # Read a frame from the video
+        ret, frame = cap.read()
+
+        if not ret:
+            break  # Break the loop if the video ends
+
+        # Recognize license plate from the frame
+        recognized_plate = recognize_license_plate(frame)
+
+        # Record traffic data
+        if recognized_plate:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            location = "Street A Entrance"  # Replace with the actual location
+            record_traffic_data(recognized_plate, timestamp, location)
+
+            # Example: Create a user and payment record for the recognized license plate
+            user_id = create_user(username=f"user_{recognized_plate}", email="user@example.com", password="secure_password")
+            payment_id = create_payment(user_id, amount=10.0, payment_method="Credit Card")
+
+            # Example: Create an administrative record for the action
+            admin_id = create_admin_record(username="admin", action=f"User {recognized_plate} parked", timestamp=timestamp)
+
+        # Add a parking space
+        parking_space_id = create_parking_space(location="Street A", is_occupied=False, user_id=user_id)
+
+        # Read and print all parking spaces
+        print("All Parking Spaces:")
+        for parking_space in parking_collection.find():
+            print(parking_space)
+
+        # Display the frame (you can add your visualization logic here)
+        cv2.imshow("Frame", frame)
+
+        # Break the loop if 'q' key is pressed
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release the video capture object and close MongoDB connection
+    cap.release()
+    cv2.destroyAllWindows()
+    client.close()
