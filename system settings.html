@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Smart Parking System Settings</title>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>Smart Parking System Settings</strong></li>
+        </ul>
+        <ul>
+            <li><a href="system dashboard.html">Dashboard</a></li>
+            <li><a href="system reports.html">Reports</a></li>
+            <li><a href="web login page.html" role="button">Log Out</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <div class="grid">
+            <section>
+                <hgroup>
+                    <h2>System Settings</h2>
+                    <h3>Configure Your System Parameters</h3>
+                </hgroup>
+                <form>
+                    <label for="parkingRate">Parking Rate:</label>
+                    <input type="number" id="parkingRate" name="parkingRate" placeholder="Enter rate per hour">
+
+                    <label for="maxCapacity">Maximum Capacity:</label>
+                    <input type="number" id="maxCapacity" name="maxCapacity" placeholder="Enter max parking spots">
+
+                    <label for="sensorThreshold">Sensor Threshold:</label>
+                    <input type="number" id="sensorThreshold" name="sensorThreshold" placeholder="Enter sensor threshold value">
+
+                    <label for="reportFrequency">Report Frequency:</label>
+                    <select id="reportFrequency" name="reportFrequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+
+                    <button type="submit">Save Changes</button>
+                </form>
+            </section>
+        </div>
+    </main>
+    <footer class="container">
+        <small><a href="#">Privacy Policy</a> • <a href="#">Terms of Use</a></small>
+    </footer>
+</body>
+</html>
